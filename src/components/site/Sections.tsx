@@ -1,3 +1,4 @@
+import { useState, type FormEvent } from "react";
 import { Reveal, SectionLabel, useInView } from "./Reveal";
 import portrait from "@/assets/otavio-portrait.jpg.asset.json";
 import crowd from "@/assets/crowd.jpg.asset.json";
@@ -734,25 +735,16 @@ export function Listen() {
                  <h3 className="display text-3xl mb-8 uppercase tracking-tighter">Ouça agora</h3>
                  
                  <div className="flex justify-center md:justify-start">
-                   <iframe 
-                     width="100%" 
-                     height="166" 
-                     scrolling="no" 
-                     frameBorder="no" 
-                     allow="autoplay" 
-                     src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1388748448&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"
-                     className="max-w-md border border-border bg-black/40"
-                   ></iframe>
+                   <a
+                     href="https://on.soundcloud.com/fZBPELSBoCkEW7Ew9B"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="tech inline-flex items-center gap-3 bg-primary px-8 py-4 text-primary-foreground hover:scale-[1.02] transition-transform active:scale-100"
+                     style={{ boxShadow: 'var(--glow)' }}
+                   >
+                     ▶ Ouvir no SoundCloud
+                   </a>
                  </div>
-                 
-                 <a 
-                   href="https://on.soundcloud.com/fZBPELSBoCkEW7Ew9B" 
-                   target="_blank" 
-                   rel="noopener noreferrer"
-                   className="tech text-primary hover:underline mt-8 inline-block text-xs uppercase tracking-widest"
-                 >
-                   Ver no SoundCloud →
-                 </a>
                </div>
                
                <div className="scanlines absolute inset-0 opacity-20 pointer-events-none" />
@@ -782,6 +774,36 @@ export function Quote() {
 }
 
 export function Contact() {
+  const [enviado, setEnviado] = useState(false);
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const dados = new FormData(form);
+    const nome = (dados.get("nome") as string)?.trim() || "";
+    const email = (dados.get("email") as string)?.trim() || "";
+    const telefone = (dados.get("telefone") as string)?.trim() || "";
+    const tipoEvento = (dados.get("tipo_evento") as string)?.trim() || "";
+    const mensagem = (dados.get("mensagem") as string)?.trim() || "";
+
+    const linhas = [
+      `Olá, Otávio! Meu nome é ${nome || "___"}.`,
+      "",
+      `Tipo de evento: ${tipoEvento}`,
+      email && `E-mail: ${email}`,
+      telefone && `Telefone: ${telefone}`,
+      mensagem && "",
+      mensagem && `Mensagem: ${mensagem}`,
+    ].filter((linha): linha is string => Boolean(linha) || linha === "");
+
+    const texto = linhas.join("\n");
+    window.open(`https://wa.me/5553999642689?text=${encodeURIComponent(texto)}`, "_blank", "noopener,noreferrer");
+
+    setEnviado(true);
+    form.reset();
+    setTimeout(() => setEnviado(false), 6000);
+  }
+
   return (
     <section id="contato" className="relative border-t border-border py-24 md:py-36">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
@@ -833,24 +855,24 @@ export function Contact() {
           </div>
 
           <Reveal delay={300}>
-            <form className="border border-border bg-card/30 p-8 md:p-12 space-y-6">
+            <form onSubmit={handleSubmit} className="border border-border bg-card/30 p-8 md:p-12 space-y-6">
               <div className="space-y-2">
                 <label className="tech text-[0.65rem] text-muted-foreground">Nome Completo</label>
-                <input type="text" className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors" placeholder="SEU NOME" />
+                <input required name="nome" type="text" className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors" placeholder="SEU NOME" />
               </div>
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label className="tech text-[0.65rem] text-muted-foreground">E-mail</label>
-                  <input type="email" className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors" placeholder="EMAIL@EXEMPLO.COM" />
+                  <input name="email" type="email" className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors" placeholder="EMAIL@EXEMPLO.COM" />
                 </div>
                 <div className="space-y-2">
                   <label className="tech text-[0.65rem] text-muted-foreground">Telefone</label>
-                  <input type="tel" className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors" placeholder="(00) 00000-0000" />
+                  <input name="telefone" type="tel" className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors" placeholder="(00) 00000-0000" />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="tech text-[0.65rem] text-muted-foreground">Tipo de Evento</label>
-                <select className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors appearance-none">
+                <select name="tipo_evento" className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors appearance-none">
                   <option>15 ANOS / FORMATURA</option>
                   <option>CASAMENTO</option>
                   <option>CLUBE / FESTA</option>
@@ -860,10 +882,10 @@ export function Contact() {
               </div>
               <div className="space-y-2">
                 <label className="tech text-[0.65rem] text-muted-foreground">Mensagem</label>
-                <textarea rows={4} className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors" placeholder="DETALHES DO EVENTO, DATA, LOCAL..."></textarea>
+                <textarea name="mensagem" rows={4} className="w-full bg-background border border-border p-4 tech focus:border-primary outline-none transition-colors" placeholder="DETALHES DO EVENTO, DATA, LOCAL..."></textarea>
               </div>
               <button type="submit" className="w-full bg-primary py-5 tech text-primary-foreground hover:scale-[1.02] transition-transform active:scale-100" style={{ boxShadow: 'var(--glow)' }}>
-                Enviar Solicitação
+                {enviado ? "Abrindo WhatsApp..." : "Enviar Solicitação"}
               </button>
             </form>
           </Reveal>
